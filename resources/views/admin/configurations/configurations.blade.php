@@ -50,6 +50,17 @@
 	<div class="card">
 		<div class="card-header">CISA Products and GL Code Mapping</div>
 		<div class="card-body">
+			<form method="GET" action="{{ route('configurations.index') }}" class="row g-2 mb-3">
+				<div class="col-md-4">
+					<input type="text" name="q" class="form-control" value="{{ request('q') }}" placeholder="Search code, description, or type...">
+				</div>
+				<div class="col-md-2 d-grid">
+					<button class="btn btn-outline-primary">Search</button>
+				</div>
+				<div class="col-md-2 d-grid">
+					<a href="{{ route('configurations.index') }}" class="btn btn-outline-secondary">Reset</a>
+				</div>
+			</form>
 			<table class="table table-bordered align-middle" style="table-layout: fixed;">
 				<thead>
 					<tr>
@@ -142,6 +153,10 @@
 					@endforelse
 				</tbody>
 			</table>
+			<div class="d-flex justify-content-between align-items-center">
+				<div class="text-muted">Showing {{ $products->firstItem() ?? 0 }} - {{ $products->lastItem() ?? 0 }} of {{ $products->total() }}</div>
+				{{ $products->links() }}
+			</div>
 		</div>
 	</div>
 </div>

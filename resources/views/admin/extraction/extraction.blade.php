@@ -122,10 +122,7 @@
                                 <i class="fas fa-file"></i>
                                 <span>Single Excel File</span>
                             </div>
-                            <div class="info-item">
-                                <i class="fas fa-palette"></i>
-                                <span>Styled Headers</span>
-                            </div>
+                           
                             <div class="info-item">
                                 <i class="fas fa-expand-arrows-alt"></i>
                                 <span>Auto-sized Columns</span>

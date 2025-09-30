@@ -10,8 +10,19 @@ class ConfigurationsController extends Controller
 {
 	public function index()
 	{
-		$products = CisaProduct::with('glCodes')->orderBy('cisa_code')->get();
-		return view('admin.configurations.configurations', compact('products'));
+        $query = CisaProduct::with('glCodes')->orderBy('cisa_code');
+
+        if (request('q')) {
+            $q = trim(request('q'));
+            $query->where(function($w) use ($q) {
+                $w->where('cisa_code', 'like', "%$q%")
+                  ->orWhere('description', 'like', "%$q%")
+                  ->orWhere('type', 'like', "%$q%");
+            });
+        }
+
+        $products = $query->paginate(10)->withQueryString();
+        return view('admin.configurations.configurations', compact('products'));
 	}
 
 	public function storeProduct(Request $request)
