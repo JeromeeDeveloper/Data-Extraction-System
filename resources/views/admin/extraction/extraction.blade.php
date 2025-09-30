@@ -1,6 +1,11 @@
 @extends('layouts.app')
 
 @section('content')
+<!-- SweetAlert2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
+
+<!-- SweetAlert2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
 <div class="main-content">
     <div class="container-fluid">
         <div class="row">
@@ -127,9 +132,9 @@
                             </div>
                         </div>
 
-                        <form action="{{ route('extraction.export') }}" method="POST" class="export-form">
+                        <form action="{{ route('extraction.export') }}" method="POST" class="export-form" id="exportForm">
                             @csrf
-                            <button type="submit" class="btn btn-primary btn-export" onclick="return confirm('This will export all data with all 70+ fields. This may take some time. Continue?')">
+                            <button type="button" class="btn btn-primary btn-export" onclick="confirmExport()">
                                 <i class="fas fa-download"></i>
                                 <span>Export to Excel</span>
                                 <small>Process all records</small>
@@ -423,4 +428,67 @@
     font-size: 12px;
 }
 </style>
+
+<script>
+function confirmExport() {
+    Swal.fire({
+        title: 'Export Data',
+        text: 'This will export all data with all 70+ fields. This may take some time. Continue?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3498db',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, Export!',
+        cancelButtonText: 'Cancel',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Show loading alert
+            Swal.fire({
+                title: 'Processing...',
+                text: 'Please wait while we export your data',
+                icon: 'info',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Submit the form
+            document.getElementById('exportForm').submit();
+
+            // Show success message after a delay (assuming download started)
+            setTimeout(() => {
+                Swal.fire({
+                    title: 'Export Started!',
+                    text: 'Your Excel file is being prepared. The download should start automatically.',
+                    icon: 'success',
+                    confirmButtonColor: '#3498db'
+                });
+            }, 2000);
+        }
+    });
+}
+
+// Handle success/error messages from server
+@if(session('success'))
+    Swal.fire({
+        title: 'Success!',
+        text: '{{ session('success') }}',
+        icon: 'success',
+        confirmButtonColor: '#3498db'
+    });
+@endif
+
+@if(session('error'))
+    Swal.fire({
+        title: 'Error!',
+        text: '{{ session('error') }}',
+        icon: 'error',
+        confirmButtonColor: '#e74c3c'
+    });
+@endif
+</script>
 @endsection
