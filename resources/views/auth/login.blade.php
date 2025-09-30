@@ -58,7 +58,7 @@
         </form>
 
         <div class="login-footer">
-          <p>© 2024 Data Extraction System. All rights reserved.</p>
+          <p>© 2025 Mass-Specc Cooperative. All rights reserved.</p>
         </div>
       </div>
     </div>
