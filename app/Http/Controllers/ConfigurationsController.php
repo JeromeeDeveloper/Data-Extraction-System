@@ -20,6 +20,8 @@ class ConfigurationsController extends Controller
 			'cisa_code' => 'required|string|max:50|unique:cisa_products,cisa_code',
 			'description' => 'required|string|max:255',
 			'type' => 'required|in:installment,non-installment',
+		],[
+			'cisa_code.unique' => 'CISA product already exists.',
 		]);
 
 		CisaProduct::create($validated);
@@ -32,6 +34,8 @@ class ConfigurationsController extends Controller
 			'cisa_code' => 'required|string|max:50|unique:cisa_products,cisa_code,' . $product->id,
 			'description' => 'required|string|max:255',
 			'type' => 'required|in:installment,non-installment',
+		],[
+			'cisa_code.unique' => 'CISA product already exists.',
 		]);
 
 		$product->update($validated);

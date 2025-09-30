@@ -17,18 +17,27 @@
 				<div class="row g-3">
 					<div class="col-md-3">
 						<label class="form-label">CISA Code</label>
-						<input type="text" name="cisa_code" class="form-control" required>
+						<input type="text" name="cisa_code" class="form-control @error('cisa_code') is-invalid @enderror" value="{{ old('cisa_code') }}" required>
+						@error('cisa_code')
+							<div class="invalid-feedback">{{ $message }}</div>
+						@enderror
 					</div>
 					<div class="col-md-5">
 						<label class="form-label">Description</label>
-						<input type="text" name="description" class="form-control" required>
+						<input type="text" name="description" class="form-control @error('description') is-invalid @enderror" value="{{ old('description') }}" required>
+						@error('description')
+							<div class="invalid-feedback">{{ $message }}</div>
+						@enderror
 					</div>
 					<div class="col-md-3">
 						<label class="form-label">Type</label>
-						<select name="type" class="form-select" required>
-							<option value="installment">Installment</option>
-							<option value="non-installment">Non-Installment</option>
+						<select name="type" class="form-select @error('type') is-invalid @enderror" required>
+							<option value="installment" {{ old('type')==='installment' ? 'selected' : '' }}>Installment</option>
+							<option value="non-installment" {{ old('type')==='non-installment' ? 'selected' : '' }}>Non-Installment</option>
 						</select>
+						@error('type')
+							<div class="invalid-feedback">{{ $message }}</div>
+						@enderror
 					</div>
 					<div class="col-md-1 d-flex align-items-end">
 						<button type="submit" class="btn btn-primary">Add</button>
@@ -53,25 +62,11 @@
 				</thead>
 				<tbody>
 					@forelse($products as $product)
+						@php $modalId = 'edit-product-'.$product->id; @endphp
 						<tr>
-							@php $formId = 'edit-form-'.$product->id; @endphp
-						<td>
-							<input form="{{ $formId }}" type="text" name="cisa_code" value="{{ $product->cisa_code }}" class="form-control form-control-sm w-100">
-						</td>
-						<td>
-							<input form="{{ $formId }}" type="text" name="description" value="{{ $product->description }}" class="form-control form-control-sm w-100">
-						</td>
-						<td class="text-capitalize">
-							<select form="{{ $formId }}" name="type" class="form-select form-select-sm w-100">
-									<option value="installment" {{ $product->type === 'installment' ? 'selected' : '' }}>Installment</option>
-									<option value="non-installment" {{ $product->type === 'non-installment' ? 'selected' : '' }}>Non-Installment</option>
-								</select>
-							<form id="{{ $formId }}" method="POST" action="{{ route('configurations.products.update', $product) }}" class="mt-2 d-flex justify-content-end">
-									@csrf
-									@method('PUT')
-								<button class="btn btn-sm btn-success px-3">Save</button>
-								</form>
-							</td>
+							<td class="align-middle">{{ $product->cisa_code }}</td>
+							<td class="align-middle">{{ $product->description }}</td>
+							<td class="text-capitalize align-middle">{{ str_replace('-', ' ', $product->type) }}</td>
 							<td>
 								@if($product->glCodes->isEmpty())
 									<span class="text-muted">No GL codes yet</span>
@@ -88,19 +83,56 @@
 									</div>
 								@endif
 							</td>
-						<td>
-							<div class="d-flex gap-2 align-items-start">
-								<form class="d-flex gap-2 flex-grow-1" method="POST" action="{{ route('configurations.products.glCodes.store', $product) }}">
-									@csrf
-									<input type="text" name="gl_code" class="form-control" placeholder="Enter GL Code" required>
-									<button type="submit" class="btn btn-outline-primary">Add GL</button>
-								</form>
-								<form method="POST" action="{{ route('configurations.products.delete', $product) }}" onsubmit="return confirm('Delete this CISA product? This will remove its GL mappings too.');">
-									@csrf
-									@method('DELETE')
-									<button class="btn btn-outline-danger">Delete</button>
-								</form>
-							</div>
+							<td>
+								<div class="d-flex gap-2 align-items-start flex-wrap">
+									<form class="d-flex gap-2 flex-grow-1" method="POST" action="{{ route('configurations.products.glCodes.store', $product) }}">
+										@csrf
+										<input type="text" name="gl_code" class="form-control" placeholder="Enter GL Code" required>
+										<button type="submit" class="btn btn-outline-primary">Add GL</button>
+									</form>
+									<button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#{{ $modalId }}">Edit</button>
+									<form method="POST" action="{{ route('configurations.products.delete', $product) }}" onsubmit="return confirm('Delete this CISA product? This will remove its GL mappings too.');">
+										@csrf
+										@method('DELETE')
+										<button class="btn btn-outline-danger">Delete</button>
+									</form>
+								</div>
+
+								<div class="modal fade" id="{{ $modalId }}" tabindex="-1" aria-hidden="true">
+									<div class="modal-dialog">
+										<div class="modal-content">
+											<div class="modal-header">
+												<h5 class="modal-title">Edit CISA Product</h5>
+												<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+											</div>
+											<form method="POST" action="{{ route('configurations.products.update', $product) }}">
+												@csrf
+												@method('PUT')
+												<div class="modal-body">
+													<div class="mb-3">
+														<label class="form-label">CISA Code</label>
+														<input type="text" name="cisa_code" value="{{ $product->cisa_code }}" class="form-control" required>
+													</div>
+													<div class="mb-3">
+														<label class="form-label">Description</label>
+														<input type="text" name="description" value="{{ $product->description }}" class="form-control" required>
+													</div>
+													<div class="mb-2">
+														<label class="form-label">Type</label>
+														<select name="type" class="form-select" required>
+															<option value="installment" {{ $product->type === 'installment' ? 'selected' : '' }}>Installment</option>
+															<option value="non-installment" {{ $product->type === 'non-installment' ? 'selected' : '' }}>Non-Installment</option>
+														</select>
+													</div>
+												</div>
+												<div class="modal-footer">
+													<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+													<button type="submit" class="btn btn-primary">Save Changes</button>
+												</div>
+											</form>
+										</div>
+									</div>
+								</div>
 						</td>
 						</tr>
 					@empty
