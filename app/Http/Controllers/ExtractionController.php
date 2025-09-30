@@ -599,36 +599,36 @@ class ExtractionController extends Controller
     }
 
 
-    public function testExport()
-    {
-        try {
-            $testConnection = DB::connection('sqlsrv2')->select("SELECT COUNT(*) as count FROM Microbanker.dbo.CIF");
+    // public function testExport()
+    // {
+    //     try {
+    //         $testConnection = DB::connection('sqlsrv2')->select("SELECT COUNT(*) as count FROM Microbanker.dbo.CIF");
 
-            if (empty($testConnection)) {
-                return response()->json(['error' => 'Database connection failed']);
-            }
+    //         if (empty($testConnection)) {
+    //             return response()->json(['error' => 'Database connection failed']);
+    //         }
 
-            $spreadsheet = new Spreadsheet();
-            $sheet = $spreadsheet->getActiveSheet();
-            $sheet->setCellValue('A1', 'Test Export');
-            $sheet->setCellValue('A2', 'Database Records: ' . $testConnection[0]->count);
-            $sheet->setCellValue('A3', 'Date: ' . date('Y-m-d H:i:s'));
+    //         $spreadsheet = new Spreadsheet();
+    //         $sheet = $spreadsheet->getActiveSheet();
+    //         $sheet->setCellValue('A1', 'Test Export');
+    //         $sheet->setCellValue('A2', 'Database Records: ' . $testConnection[0]->count);
+    //         $sheet->setCellValue('A3', 'Date: ' . date('Y-m-d H:i:s'));
 
-            $writer = new Xlsx($spreadsheet);
-            $filePath = storage_path('app/temp/test_export.xlsx');
+    //         $writer = new Xlsx($spreadsheet);
+    //         $filePath = storage_path('app/temp/test_export.xlsx');
 
-            if (!file_exists(storage_path('app/temp'))) {
-                mkdir(storage_path('app/temp'), 0755, true);
-            }
+    //         if (!file_exists(storage_path('app/temp'))) {
+    //             mkdir(storage_path('app/temp'), 0755, true);
+    //         }
 
-            $writer->save($filePath);
+    //         $writer->save($filePath);
 
-            return response()->download($filePath, 'test_export.xlsx')->deleteFileAfterSend(true);
+    //         return response()->download($filePath, 'test_export.xlsx')->deleteFileAfterSend(true);
 
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()]);
-        }
-    }
+    //     } catch (\Exception $e) {
+    //         return response()->json(['error' => $e->getMessage()]);
+    //     }
+    // }
 }
 
 
