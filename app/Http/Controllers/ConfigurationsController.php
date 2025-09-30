@@ -1,0 +1,47 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\CisaProduct;
+use App\Models\CisaProductGlCode;
+use Illuminate\Http\Request;
+
+class ConfigurationsController extends Controller
+{
+	public function index()
+	{
+		$products = CisaProduct::with('glCodes')->orderBy('cisa_code')->get();
+		return view('admin.configurations.configurations', compact('products'));
+	}
+
+	public function storeProduct(Request $request)
+	{
+		$validated = $request->validate([
+			'cisa_code' => 'required|string|max:50|unique:cisa_products,cisa_code',
+			'description' => 'required|string|max:255',
+			'type' => 'required|in:installment,non-installment',
+		]);
+
+		CisaProduct::create($validated);
+		return back()->with('success', 'CISA product created');
+	}
+
+	public function addGlCode(Request $request, CisaProduct $product)
+	{
+		$validated = $request->validate([
+			'gl_code' => 'required|string|max:50',
+		]);
+
+		$product->glCodes()->firstOrCreate(['gl_code' => $validated['gl_code']]);
+		return back()->with('success', 'GL code added');
+	}
+
+	public function deleteGlCode(CisaProduct $product, CisaProductGlCode $glCode)
+	{
+		abort_if($glCode->cisa_product_id !== $product->id, 404);
+		$glCode->delete();
+		return back()->with('success', 'GL code removed');
+	}
+}
+
+

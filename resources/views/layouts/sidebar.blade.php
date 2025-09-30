@@ -16,6 +16,12 @@
                     Data Extraction
                 </a>
             </li>
+            <li>
+                <a href="{{ route('configurations.index') }}" class="{{ request()->routeIs('configurations.*') ? 'active' : '' }}">
+                    <i class="fas fa-cogs"></i>
+                    Configurations
+                </a>
+            </li>
         </ul>
     </nav>
 </div>

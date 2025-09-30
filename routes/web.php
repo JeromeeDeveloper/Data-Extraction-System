@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ExtractionController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ConfigurationsController;
 
 // Public routes
 Route::get('/', function () {
@@ -41,4 +42,10 @@ Route::middleware('auth')->group(function () {
             'laravel_version' => app()->version()
         ]);
     });
+
+    // Configurations (CISA Products)
+    Route::get('/configurations', [ConfigurationsController::class, 'index'])->name('configurations.index');
+    Route::post('/configurations/products', [ConfigurationsController::class, 'storeProduct'])->name('configurations.products.store');
+    Route::post('/configurations/products/{product}/gl-codes', [ConfigurationsController::class, 'addGlCode'])->name('configurations.products.glCodes.store');
+    Route::delete('/configurations/products/{product}/gl-codes/{glCode}', [ConfigurationsController::class, 'deleteGlCode'])->name('configurations.products.glCodes.delete');
 });
