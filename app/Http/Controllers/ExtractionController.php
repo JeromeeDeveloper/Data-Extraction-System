@@ -65,7 +65,7 @@ class ExtractionController extends Controller
                 'Identification 1: Type', 'Identification 1: Number', 'Identification 2: Type', 'Identification 2: Number',
                 'ID 1: Type', 'ID 1: Number', 'ID 1: IssueDate', 'ID 1: IssueCountry', 'ID 1: ExpiryDate', 'ID 1: Issued By',
                 'ID 2: Type', 'ID 2: Number', 'ID 2: IssueDate', 'ID 2: IssueCountry', 'ID 2: ExpiryDate', 'ID 2: Issued By',
-                'Contact 1: Type', 'Contact 1: Value',
+                'Contact 1: Type', 'Contact 1: Value', 'Contact 2: Type', 'Contact 2: Value',
                 'Employment: Trade Name', 'Employment: PSIC', 'Employment: OccupationStatus', 'Employment: Occupation',
                 'Trade Name', 'Role', 'Provider Contract No', 'Contract Type', 'Contract Phase',
                 'Currency', 'Original Currency', 'Contract Start Date', 'Contract End Planned Date', 'Contract End Actual Date',
@@ -112,6 +112,11 @@ class ExtractionController extends Controller
 
             $aiPrevLastNameExpr   = $col(['PrevLastName','PreviousLastName','PrevSurname']);
             $aiNumDependentsExpr  = $col(['NoOfDependents','NumDependents']);
+            $aiPlaceOfBirthExpr   = $col(['PlaceOfBirth']);
+            $aiEmployerExpr       = $col(['Employer']);
+            $aiEmpIndCodeExpr     = $col(['EmpIndCode']);
+            $aiEmpOccuStatusExpr  = $col(['EmpOccuStatus']);
+            $aiEmpOccupationExpr  = $col(['EmpOccupation']);
             $aiMotherMaidenExpr   = $col(['MotherMaidenName','MothersMaidenName']);
             // Mother's maiden name parts (custom variants)
             $aiMotherFirstExpr    = $col(['MoMdFirstname','MotherFirstName','MothersFirstName']);
@@ -153,6 +158,11 @@ class ExtractionController extends Controller
                     -- CIF additional info (only selecting columns that exist)
                     $aiPrevLastNameExpr as aiPrevLastName,
                     $aiNumDependentsExpr as aiNumDependents,
+                    $aiPlaceOfBirthExpr as aiPlaceOfBirth,
+                    $aiEmployerExpr as aiEmployer,
+                    $aiEmpIndCodeExpr as aiEmpIndCode,
+                    $aiEmpOccuStatusExpr as aiEmpOccuStatus,
+                    $aiEmpOccupationExpr as aiEmpOccupation,
                     $aiMotherMaidenExpr as aiMotherMaidenName,
                     $aiMotherFirstExpr as aiMotherFirstName,
                     $aiMotherLastExpr as aiMotherLastName,
@@ -192,8 +202,10 @@ class ExtractionController extends Controller
                     instagg.OverdueCount as OverdueInstCount,
                     instagg.OverdueAmount as OverdueInstAmount,
                     l.Acc as LoanAcc,
+                    l.Chd as LoanChd,
                     l.PrType,
                     l.AccStatus,
+                    l.AccStatusDate,
                     l.OpenDate,
                     l.MatDate,
                     l.GrantedAmt,
@@ -201,8 +213,12 @@ class ExtractionController extends Controller
                     l.IntRate,
                     l.FixAmt,
                     l.InstNo,
+                    l.UnExInstNo,
                     l.FreqType,
                     l.LateDaysNo,
+                    l.GrantedAmtOrig,
+                    l.OdueIntAmt,
+                    l.OduePriAmt,
                     l.CcyType,
                     l.LastTrnDate,
                     l.LastTrn,
@@ -283,9 +299,9 @@ class ExtractionController extends Controller
                 $processedCount++;
 
                 // Get lookup values
-                $titleDesc = $this->getLookupValue('TC', $record->TitleCode);
-                $genderDesc = $this->getLookupValue('TG', $record->GenderType);
-                $civilStatusDesc = $this->getLookupValue('CS', $record->CivilStatusCode);
+                $titleDesc = $this->getTitleAcronymCode($record->TitleCode);
+                $genderDesc = $this->getGenderCode($record->GenderType);
+                $civilStatusDesc = $this->getCivilStatusCode($record->CivilStatusCode);
                 $productTypeDesc = $this->getLookupValue('41', $record->PrType);
                 $frequencyDesc = $this->getLookupValue('FRE', $record->FreqType);
                 $transactionDesc = $this->getLookupValue('TX', $record->TrnType);
@@ -305,6 +321,14 @@ class ExtractionController extends Controller
                 $addr1Full = $record->aiAddr1Full ?? ($record->Addr1FullText ?? $address);
                 $addr2Full = $record->aiAddr2Full ?? ($record->Addr2FullText ?? '');
 
+                // Determine residency status (1 if Resident, 0 if Non-Resident)
+                // Since this is a Philippine microbanker system, assume residents are those with Philippine addresses
+                $isResident = 1; // Default to resident for Philippine microbanker
+                // Could be enhanced to check address country codes if available
+
+                // Convert numeric value to text for display
+                $residentText = $isResident == 1 ? 'Resident' : 'Non Resident';
+
                 // Build Mother's Maiden FULL NAME from parts if full not provided
                 $motherFull = $record->aiMotherMaidenName ?? '';
                 if ($motherFull === '' || $motherFull === null) {
@@ -320,7 +344,7 @@ class ExtractionController extends Controller
                     'Provider Code' => 'MB001',
                     'Branch Code' => $branchCode,
                     'Subject Reference Date' => $record->RegisterDate ? date('Y-m-d', strtotime($record->RegisterDate)) : '',
-                    'Provider Subject No' => $record->CID ?? '',
+                    'Provider Subject No' => ($record->CID ?? '') . $branchCode,
                     'Title' => $titleDesc,
                     'First Name' => $record->FirstName ?? '',
                     'Last Name' => $record->LastName ?? '',
@@ -329,10 +353,10 @@ class ExtractionController extends Controller
                     'Previous Last Name' => $record->aiPrevLastName ?? '',
                     'Gender' => $genderDesc,
                     'Date of Birth' => $record->BirthDate ? date('Y-m-d', strtotime($record->BirthDate)) : '',
-                    'Place of Birth' => '',
+                    'Place of Birth' => $record->aiPlaceOfBirth ?? '',
                     'Country of Birth (Code)' => 'PH',
                     'Nationality' => 'Filipino',
-                    'Resident' => 'Yes',
+                    'Resident' => $residentText,
                     'Civil Status' => $civilStatusDesc,
                     'Number of Dependents' => $record->aiNumDependents ?? '',
                     'Car/s Owned' => '',
@@ -344,9 +368,9 @@ class ExtractionController extends Controller
                     'Father Last Name' => $record->aiFatherLastName ?? '',
                     'Father Middle Name' => $record->aiFatherMiddleName ?? '',
                     'Father Suffix' => $record->aiFatherSuffix ?? '',
-                    'Address 1: Address Type' => $record->aiAddr1Type ?? ($record->Addr1TypeCode ?? 'Primary'),
+                    'Address 1: Address Type' => $this->getAddressTypeCode($record->Addr1TypeCode ?? '0'),
                     'Address 1: FullAddress' => $addr1Full,
-                    'Address 2: Address Type' => $record->aiAddr2Type ?? ($record->Addr2TypeCode ?? ''),
+                    'Address 2: Address Type' => $this->getAddressTypeCode($record->Addr2TypeCode ?? '1'),
                     'Address 2: FullAddress' => $addr2Full,
                     'Identification 1: Type' => $record->ID1TypeCode ?? '',
                     'Identification 1: Number' => $record->ID1Number ?? ($record->Nid ?? ''),
@@ -364,35 +388,37 @@ class ExtractionController extends Controller
                     'ID 2: IssueCountry' => $id2IssueCountry,
                     'ID 2: ExpiryDate' => !empty($record->ID2ExpiryDate) ? date('Y-m-d', strtotime($record->ID2ExpiryDate)) : '',
                     'ID 2: Issued By' => $record->ID2IssuedBy ?? '',
-                    'Contact 1: Type' => 'Mobile',
+                    'Contact 1: Type' => $this->getContactTypeCode('Mobile'),
                     'Contact 1: Value' => $record->Mobile1 ?? '',
-                    'Employment: Trade Name' => '',
-                    'Employment: PSIC' => '',
-                    'Employment: OccupationStatus' => '',
-                    'Employment: Occupation' => '',
-                    'Trade Name' => $branchName,
-                    'Role' => 'Customer',
-                    'Provider Contract No' => $record->LoanAcc ?? '',
+                    'Contact 2: Type' => $this->getContactTypeCode('Email'),
+                    'Contact 2: Value' => $record->Email1 ?? '',
+                    'Employment: Trade Name' => $record->aiEmployer ?? '',
+                    'Employment: PSIC' => $record->aiEmpIndCode ?? '',
+                    'Employment: OccupationStatus' => $record->aiEmpOccuStatus ?? '',
+                    'Employment: Occupation' => $record->aiEmpOccupation ?? '',
+                    'Trade Name' => trim(($record->LastName ?? '') . ' ' . ($record->FirstName ?? '')),
+                    'Role' => 'B',
+                    'Provider Contract No' => $branchCode . $record->LoanAcc . $record->LoanChd,
                     'Contract Type' => $productTypeDesc,
-                    'Contract Phase' => $record->AccStatus ?? '',
+                    'Contract Phase' => $this->getContractPhaseCode($record->AccStatus ?? '', $record->MatDate, $record->AccStatusDate),
                     'Currency' => $record->CcyType ?? '',
                     'Original Currency' => $record->CcyType ?? '',
                     'Contract Start Date' => $record->OpenDate ? date('Y-m-d', strtotime($record->OpenDate)) : '',
                     'Contract End Planned Date' => $record->MatDate ? date('Y-m-d', strtotime($record->MatDate)) : '',
-                    'Contract End Actual Date' => $record->CloseDate ? date('Y-m-d', strtotime($record->CloseDate)) : '',
+                    'Contract End Actual Date' => $record->AccStatusDate ? date('Y-m-d', strtotime($record->AccStatusDate)) : '',
                     'Financed Amount' => $record->GrantedAmt ?? 0,
                     'Installments Number' => $record->InstNo ?? 0,
-                    'Transaction Type / Sub-facility' => $transactionDesc,
-                    'Payment Periodicity' => $frequencyDesc,
+                    'Transaction Type / Sub-facility' => 'NA',
+                    'Payment Periodicity' => $this->getPaymentPeriodicityCode($record->FreqType ?? '', $record->InstNo ?? 0),
                     'Monthly Payment Amount' => $record->FixAmt ?? 0,
                     'Last payment amount' => $record->TrnAmt ?? 0,
-                    'Next Payment Date' => !empty($record->NextInstDueDate) ? date('Y-m-d', strtotime($record->NextInstDueDate)) : ($record->LastTrnDate ? date('Y-m-d', strtotime($record->LastTrnDate)) : ''),
-                    'Outstanding Payments Number' => isset($record->OutstandingInstCount) ? (int)$record->OutstandingInstCount : ($record->InstNo ?? 0),
-                    'Outstanding Balance' => $record->BalAmt ?? 0,
-                    'Overdue Payments Number' => isset($record->OverdueInstCount) ? (int)$record->OverdueInstCount : ($record->LateDaysNo > 0 ? 1 : 0),
-                    'Overdue Payments Amount' => isset($record->OverdueInstAmount) ? (float)$record->OverdueInstAmount : ($record->LateDaysNo > 0 ? $record->BalAmt : 0),
+                    'Next Payment Date' => !empty($record->NextInstDueDate) ? date('Y-m-d', strtotime($record->NextInstDueDate)) : '',
+                    'Outstanding Payments Number' => $record->UnExInstNo ?? 0,
+                    'Outstanding Balance' => round(($record->BalAmt ?? 0) / 100),
+                    'Overdue Payments Number' => isset($record->OverdueInstCount) ? (int)$record->OverdueInstCount : 0,
+                    'Overdue Payments Amount' => round((($record->OdueIntAmt ?? 0) + ($record->OduePriAmt ?? 0)) / 100),
                     'Overdue Days' => $record->LateDaysNo ?? 0,
-                    'Credit Limit' => $record->GrantedAmt ?? 0
+                    'Credit Limit' => $record->GrantedAmtOrig ?? 0
                 ];
 
                 try {
@@ -460,6 +486,118 @@ class ExtractionController extends Controller
             return $lookupCode;
         }
     }
+
+    private function getGenderCode($genderType)
+    {
+        // Map gender type codes to gender codes as per requirements
+        $genderMapping = [
+            '000' => 'Others',
+            '001' => 'M', // Male
+            '002' => 'F', // Female
+        ];
+
+        return $genderMapping[$genderType] ?? $genderType;
+    }
+
+    private function getCivilStatusCode($civilStatusCode)
+    {
+        // Map civil status codes to numeric codes as per requirements
+        $civilStatusMapping = [
+            'D00' => '3', // Divorced
+            'M00' => '2', // Married
+            'S00' => '1', // Single
+            'SEP' => '3', // Separated
+            'W00' => '4', // Widowed
+        ];
+
+        return $civilStatusMapping[$civilStatusCode] ?? $civilStatusCode;
+    }
+
+    private function getTitleAcronymCode($titleCode)
+    {
+        // Map title codes to numeric acronym codes as per requirements
+        $titleMapping = [
+            '000' => '', // Unknown
+            '001' => '10', // Mr
+            '002' => '11', // Ms
+            '003' => '13', // Mrs
+            '004' => '14', // Dr
+            '005' => '15', // Prof
+            '006' => '', // Atty (no code specified)
+            '007' => '21', // Rev
+            '008' => '21', // Fr
+            '009' => '16', // Hon
+            '010' => '10', // Engr
+            '011' => '12', // Sr
+        ];
+
+        return $titleMapping[$titleCode] ?? $titleCode;
+    }
+
+    private function getAddressTypeCode($addrType)
+    {
+        // Map address type codes to address type codes as per requirements
+        $addressTypeMapping = [
+            '0' => 'MI', // Main
+            '1' => 'AI', // Alternate
+        ];
+
+        return $addressTypeMapping[$addrType] ?? $addrType;
+    }
+
+    private function getContactTypeCode($contactType)
+    {
+        // Map contact types to numeric codes as per requirements
+        $contactTypeMapping = [
+            'Mobile' => '3',
+            'Email' => '7',
+        ];
+
+        return $contactTypeMapping[$contactType] ?? $contactType;
+    }
+
+    private function getContractPhaseCode($accStatus, $matDate, $accStatusDate)
+    {
+        // Map account status to contract phase codes as per requirements
+        if ($accStatus == '01') {
+            return 'AC'; // Active
+        } elseif ($accStatus == '99') {
+            // Check if closed in advance
+            if ($matDate && $accStatusDate && strtotime($matDate) < strtotime($accStatusDate)) {
+                return 'CA'; // Closed in Advance
+            } else {
+                return 'CL'; // Closed
+            }
+        }
+
+        return $accStatus; // Return original if no mapping found
+    }
+
+    private function getPaymentPeriodicityCode($freqType, $instNo)
+    {
+        // If installment number is 1, return P
+        if ($instNo == 1) {
+            return 'P';
+        }
+
+        // Map frequency type codes to periodicity codes as per requirements
+        $periodicityMapping = [
+            '001' => 'Y', // Annual
+            '002' => 'S', // Semi-Annual
+            '003' => 'T', // 3x Per Year
+            '004' => 'Q', // Quarterly
+            '006' => 'B', // Every 2 months
+            '012' => 'M', // Monthly
+            '013' => '', // Four Weekly (no code specified)
+            '024' => 'F', // Semi-Monthly
+            '026' => '', // Every 2 weeks (no code specified)
+            '052' => 'W', // Weekly
+            '365' => 'D', // Daily
+        ];
+
+        return $periodicityMapping[$freqType] ?? $freqType;
+    }
+
 
     public function testExport()
     {
