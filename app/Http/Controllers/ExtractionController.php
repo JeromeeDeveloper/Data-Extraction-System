@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Models\CisaProduct;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
@@ -217,6 +218,7 @@ class ExtractionController extends Controller
                     l.FreqType,
                     l.LateDaysNo,
                     l.GrantedAmtOrig,
+                    l.GLCode,
                     l.OdueIntAmt,
                     l.OduePriAmt,
                     l.CcyType,
@@ -339,8 +341,32 @@ class ExtractionController extends Controller
                     $motherFull = trim(implode(' ', $parts));
                 }
 
+                // Determine Record Type from CISA Products (CI for installment, CN for non-installment). Skip if no match
+                $resolvedRecordType = null;
+                try {
+                    $matchedProduct = null;
+                    if (!empty($record->PrType)) {
+                        $matchedProduct = \App\Models\CisaProduct::where('cisa_code', trim($record->PrType))->first();
+                    }
+                    if (!$matchedProduct && !empty($record->GLCode)) {
+                        $matchedProduct = \App\Models\CisaProduct::whereHas('glCodes', function($q) use ($record) {
+                            $q->where('gl_code', trim($record->GLCode));
+                        })->first();
+                    }
+                    if ($matchedProduct) {
+                        $resolvedRecordType = $matchedProduct->type === 'installment' ? 'CI' : 'CN';
+                    }
+                } catch (\Throwable $e) {
+                    // leave as null (skip later)
+                }
+
+                // If no CISA product matched, skip this record
+                if ($resolvedRecordType === null) {
+                    continue;
+                }
+
                 $comprehensiveData = [
-                    'Record Type' => 'Individual',
+                    'Record Type' => $resolvedRecordType,
                     'Provider Code' => 'MB001',
                     'Branch Code' => $branchCode,
                     'Subject Reference Date' => $record->RegisterDate ? date('dmY', strtotime($record->RegisterDate)) : '',

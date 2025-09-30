@@ -26,6 +26,18 @@ class ConfigurationsController extends Controller
 		return back()->with('success', 'CISA product created');
 	}
 
+	public function updateProduct(Request $request, CisaProduct $product)
+	{
+		$validated = $request->validate([
+			'cisa_code' => 'required|string|max:50|unique:cisa_products,cisa_code,' . $product->id,
+			'description' => 'required|string|max:255',
+			'type' => 'required|in:installment,non-installment',
+		]);
+
+		$product->update($validated);
+		return back()->with('success', 'CISA product updated');
+	}
+
 	public function addGlCode(Request $request, CisaProduct $product)
 	{
 		$validated = $request->validate([
@@ -41,6 +53,12 @@ class ConfigurationsController extends Controller
 		abort_if($glCode->cisa_product_id !== $product->id, 404);
 		$glCode->delete();
 		return back()->with('success', 'GL code removed');
+	}
+
+	public function destroy(CisaProduct $product)
+	{
+		$product->delete();
+		return back()->with('success', 'CISA product deleted');
 	}
 }
 

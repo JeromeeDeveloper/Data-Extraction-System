@@ -46,6 +46,8 @@ Route::middleware('auth')->group(function () {
     // Configurations (CISA Products)
     Route::get('/configurations', [ConfigurationsController::class, 'index'])->name('configurations.index');
     Route::post('/configurations/products', [ConfigurationsController::class, 'storeProduct'])->name('configurations.products.store');
+    Route::put('/configurations/products/{product}', [ConfigurationsController::class, 'updateProduct'])->name('configurations.products.update');
     Route::post('/configurations/products/{product}/gl-codes', [ConfigurationsController::class, 'addGlCode'])->name('configurations.products.glCodes.store');
     Route::delete('/configurations/products/{product}/gl-codes/{glCode}', [ConfigurationsController::class, 'deleteGlCode'])->name('configurations.products.glCodes.delete');
+    Route::delete('/configurations/products/{product}', [ConfigurationsController::class, 'destroy'])->name('configurations.products.delete');
 });

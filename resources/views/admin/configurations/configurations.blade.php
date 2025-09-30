@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="main-content">
-<div class="container">
+<div>
 	<h2>Configurations - CISA Products</h2>
 
 	@if(session('success'))
@@ -41,22 +41,37 @@
 	<div class="card">
 		<div class="card-header">CISA Products and GL Code Mapping</div>
 		<div class="card-body">
-			<table class="table table-bordered align-middle">
+			<table class="table table-bordered align-middle" style="table-layout: fixed;">
 				<thead>
 					<tr>
-						<th style="width: 120px;">CISA Code</th>
-						<th>Description</th>
-						<th style="width: 160px;">Type</th>
-						<th>GL Codes</th>
-						<th style="width: 320px;">Add GL Code</th>
+						<th style="width: 160px;">CISA Code</th>
+						<th style="width: 35%;">Description</th>
+						<th style="width: 180px;">Type</th>
+						<th style="width: 25%;">GL Codes</th>
+						<th style="width: 350px;">Edit / Add GL Code</th>
 					</tr>
 				</thead>
 				<tbody>
 					@forelse($products as $product)
 						<tr>
-							<td>{{ $product->cisa_code }}</td>
-							<td>{{ $product->description }}</td>
-							<td class="text-capitalize">{{ str_replace('-', ' ', $product->type) }}</td>
+							@php $formId = 'edit-form-'.$product->id; @endphp
+						<td>
+							<input form="{{ $formId }}" type="text" name="cisa_code" value="{{ $product->cisa_code }}" class="form-control form-control-sm w-100">
+						</td>
+						<td>
+							<input form="{{ $formId }}" type="text" name="description" value="{{ $product->description }}" class="form-control form-control-sm w-100">
+						</td>
+						<td class="text-capitalize">
+							<select form="{{ $formId }}" name="type" class="form-select form-select-sm w-100">
+									<option value="installment" {{ $product->type === 'installment' ? 'selected' : '' }}>Installment</option>
+									<option value="non-installment" {{ $product->type === 'non-installment' ? 'selected' : '' }}>Non-Installment</option>
+								</select>
+							<form id="{{ $formId }}" method="POST" action="{{ route('configurations.products.update', $product) }}" class="mt-2 d-flex justify-content-end">
+									@csrf
+									@method('PUT')
+								<button class="btn btn-sm btn-success px-3">Save</button>
+								</form>
+							</td>
 							<td>
 								@if($product->glCodes->isEmpty())
 									<span class="text-muted">No GL codes yet</span>
@@ -73,17 +88,20 @@
 									</div>
 								@endif
 							</td>
-							<td>
-								<form class="row g-2" method="POST" action="{{ route('configurations.products.glCodes.store', $product) }}">
+						<td>
+							<div class="d-flex gap-2 align-items-start">
+								<form class="d-flex gap-2 flex-grow-1" method="POST" action="{{ route('configurations.products.glCodes.store', $product) }}">
 									@csrf
-									<div class="col-8">
-										<input type="text" name="gl_code" class="form-control" placeholder="Enter GL Code" required>
-									</div>
-									<div class="col-4">
-										<button type="submit" class="btn btn-outline-primary w-100">Add GL</button>
-									</div>
+									<input type="text" name="gl_code" class="form-control" placeholder="Enter GL Code" required>
+									<button type="submit" class="btn btn-outline-primary">Add GL</button>
 								</form>
-							</td>
+								<form method="POST" action="{{ route('configurations.products.delete', $product) }}" onsubmit="return confirm('Delete this CISA product? This will remove its GL mappings too.');">
+									@csrf
+									@method('DELETE')
+									<button class="btn btn-outline-danger">Delete</button>
+								</form>
+							</div>
+						</td>
 						</tr>
 					@empty
 						<tr>
