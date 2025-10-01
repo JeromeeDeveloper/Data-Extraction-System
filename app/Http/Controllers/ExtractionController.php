@@ -345,19 +345,25 @@ class ExtractionController extends Controller
                 $resolvedRecordType = null;
                 try {
                     $matchedProduct = null;
+                    // Try to match PrType (contract type) against gl_code in CisaProductGlCode
                     if (!empty($record->PrType)) {
-                        $matchedProduct = \App\Models\CisaProduct::where('cisa_code', trim($record->PrType))->first();
+                        $glCodeMatch = \App\Models\CisaProductGlCode::where('gl_code', trim($record->PrType))->first();
+                        if ($glCodeMatch) {
+                            $matchedProduct = $glCodeMatch->cisaProduct;
+                        }
                     }
+                    // If not found by PrType, try to match GLCode against gl_code in CisaProductGlCode
                     if (!$matchedProduct && !empty($record->GLCode)) {
-                        $matchedProduct = \App\Models\CisaProduct::whereHas('glCodes', function($q) use ($record) {
-                            $q->where('gl_code', trim($record->GLCode));
-                        })->first();
+                        $glCodeMatch = \App\Models\CisaProductGlCode::where('gl_code', trim($record->GLCode))->first();
+                        if ($glCodeMatch) {
+                            $matchedProduct = $glCodeMatch->cisaProduct;
+                        }
                     }
                     if ($matchedProduct) {
                         $resolvedRecordType = $matchedProduct->type === 'installment' ? 'CI' : 'CN';
                     }
                 } catch (\Throwable $e) {
-                    // leave as null (skip later)
+                    \Log::error("Error in record type determination: " . $e->getMessage());
                 }
 
                 // If no CISA product matched, skip this record

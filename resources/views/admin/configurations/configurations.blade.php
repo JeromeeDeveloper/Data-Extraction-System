@@ -52,7 +52,7 @@
 		<div class="card-body">
 			<form method="GET" action="{{ route('configurations.index') }}" class="row g-2 mb-3">
 				<div class="col-md-4">
-					<input type="text" name="q" class="form-control" value="{{ request('q') }}" placeholder="Search code, description, or type...">
+					<input type="text" name="q" class="form-control" value="{{ request('q') }}" placeholder="Search CISA code, description, or type...">
 				</div>
 				<div class="col-md-2 d-grid">
 					<button class="btn btn-outline-primary">Search</button>
@@ -98,7 +98,12 @@
 								<div class="d-flex gap-2 align-items-start flex-wrap">
 									<form class="d-flex gap-2 flex-grow-1" method="POST" action="{{ route('configurations.products.glCodes.store', $product) }}">
 										@csrf
-										<input type="text" name="gl_code" class="form-control" placeholder="Enter GL Code" required>
+										<div class="flex-grow-1">
+											<input type="text" name="gl_code" class="form-control @error('gl_code') is-invalid @enderror" placeholder="Enter GL Code" required>
+											@error('gl_code')
+												<div class="invalid-feedback">{{ $message }}</div>
+											@enderror
+										</div>
 										<button type="submit" class="btn btn-outline-primary">Add GL</button>
 									</form>
 									<button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#{{ $modalId }}">Edit</button>

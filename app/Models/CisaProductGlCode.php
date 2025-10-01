@@ -14,7 +14,7 @@ class CisaProductGlCode extends Model
 		'gl_code',
 	];
 
-	public function product()
+	public function cisaProduct()
 	{
 		return $this->belongsTo(CisaProduct::class, 'cisa_product_id');
 	}

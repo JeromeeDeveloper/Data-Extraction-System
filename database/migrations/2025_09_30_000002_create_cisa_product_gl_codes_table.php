@@ -11,9 +11,8 @@ return new class extends Migration
 		Schema::create('cisa_product_gl_codes', function (Blueprint $table) {
 			$table->id();
 			$table->foreignId('cisa_product_id')->constrained('cisa_products')->cascadeOnDelete();
-			$table->string('gl_code');
+			$table->string('gl_code')->unique();
 			$table->timestamps();
-			$table->unique(['cisa_product_id', 'gl_code']);
 		});
 	}
 

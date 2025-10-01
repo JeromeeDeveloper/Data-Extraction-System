@@ -56,10 +56,12 @@ class ConfigurationsController extends Controller
 	public function addGlCode(Request $request, CisaProduct $product)
 	{
 		$validated = $request->validate([
-			'gl_code' => 'required|string|max:50',
+			'gl_code' => 'required|string|max:50|unique:cisa_product_gl_codes,gl_code',
+		], [
+			'gl_code.unique' => 'GL code already exists.',
 		]);
 
-		$product->glCodes()->firstOrCreate(['gl_code' => $validated['gl_code']]);
+		$product->glCodes()->create($validated);
 		return back()->with('success', 'GL code added');
 	}
 
