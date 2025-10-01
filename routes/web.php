@@ -50,4 +50,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/configurations/products/{product}/gl-codes', [ConfigurationsController::class, 'addGlCode'])->name('configurations.products.glCodes.store');
     Route::delete('/configurations/products/{product}/gl-codes/{glCode}', [ConfigurationsController::class, 'deleteGlCode'])->name('configurations.products.glCodes.delete');
     Route::delete('/configurations/products/{product}', [ConfigurationsController::class, 'destroy'])->name('configurations.products.delete');
+
+    // Title Configuration routes
+    Route::get('/configurations/title', [ConfigurationsController::class, 'title'])->name('configurations.title');
+    Route::post('/configurations/title', [ConfigurationsController::class, 'storeTitle'])->name('configurations.title.store');
+    Route::put('/configurations/title/{titleConfiguration}', [ConfigurationsController::class, 'updateTitle'])->name('configurations.title.update');
+    Route::delete('/configurations/title/{titleConfiguration}', [ConfigurationsController::class, 'destroyTitle'])->name('configurations.title.delete');
+
+    // Gender Configuration routes
+    Route::get('/configurations/gender', [ConfigurationsController::class, 'gender'])->name('configurations.gender');
+    Route::post('/configurations/gender', [ConfigurationsController::class, 'storeGender'])->name('configurations.gender.store');
+    Route::put('/configurations/gender/{genderConfiguration}', [ConfigurationsController::class, 'updateGender'])->name('configurations.gender.update');
+    Route::delete('/configurations/gender/{genderConfiguration}', [ConfigurationsController::class, 'destroyGender'])->name('configurations.gender.delete');
 });

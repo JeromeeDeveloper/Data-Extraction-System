@@ -16,11 +16,32 @@
                     Data Extraction
                 </a>
             </li>
-            <li>
-                <a href="{{ route('configurations.index') }}" class="{{ request()->routeIs('configurations.*') ? 'active' : '' }}">
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle {{ request()->routeIs('configurations.*') ? 'active' : '' }}" data-bs-toggle="dropdown">
                     <i class="fas fa-cogs"></i>
                     Configurations
+                    <i class="fas fa-chevron-down ms-auto"></i>
                 </a>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a href="{{ route('configurations.index') }}" class="{{ request()->routeIs('configurations.index') ? 'active' : '' }}">
+                            <i class="fas fa-box"></i>
+                            Product Configuration
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('configurations.title') }}" class="{{ request()->routeIs('configurations.title') ? 'active' : '' }}">
+                            <i class="fas fa-user-tag"></i>
+                            Title Configuration
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('configurations.gender') }}" class="{{ request()->routeIs('configurations.gender') ? 'active' : '' }}">
+                            <i class="fas fa-venus-mars"></i>
+                            Gender Configuration
+                        </a>
+                    </li>
+                </ul>
             </li>
         </ul>
     </nav>
@@ -90,6 +111,59 @@
     margin-right: 10px;
     width: 20px;
     text-align: center;
+}
+
+/* Dropdown styles */
+.dropdown {
+    position: relative;
+}
+
+.dropdown-toggle {
+    cursor: pointer;
+}
+
+.dropdown-toggle .ms-auto {
+    margin-left: auto;
+    font-size: 12px;
+    transition: transform 0.3s ease;
+}
+
+.dropdown-toggle[aria-expanded="true"] .ms-auto {
+    transform: rotate(180deg);
+}
+
+.dropdown-menu {
+    position: static;
+    background: #34495e;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+    display: none;
+}
+
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-menu li {
+    margin: 0;
+}
+
+.dropdown-menu a {
+    padding: 12px 20px 12px 50px;
+    font-size: 14px;
+    background: #34495e;
+}
+
+.dropdown-menu a:hover {
+    background: #2c3e50;
+    border-left-color: #3498db;
+}
+
+.dropdown-menu a.active {
+    background: #3498db;
+    border-left-color: #2980b9;
 }
 
 

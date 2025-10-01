@@ -300,9 +300,9 @@ class ExtractionController extends Controller
                 $col = 1;
                 $processedCount++;
 
-                // Get lookup values
-                $titleDesc = $this->getTitleAcronymCode($record->TitleCode);
-                $genderDesc = $this->getGenderCode($record->GenderType);
+                // Get lookup values from database configurations
+                $titleDesc = $this->getTitleFromConfig($record->TitleCode);
+                $genderDesc = $this->getGenderFromConfig($record->GenderType);
                 $civilStatusDesc = $this->getCivilStatusCode($record->CivilStatusCode);
                 $productTypeDesc = $this->getLookupValue('41', $record->PrType);
                 $frequencyDesc = $this->getLookupValue('FRE', $record->FreqType);
@@ -517,6 +517,38 @@ class ExtractionController extends Controller
         } catch (\Exception $e) {
             return $lookupCode;
         }
+    }
+
+    private function getTitleFromConfig($titleCode)
+    {
+        if (empty($titleCode)) {
+            return '';
+        }
+
+        $titleConfig = \App\Models\TitleConfiguration::where('title_code', trim($titleCode))->first();
+
+        if ($titleConfig) {
+            return $titleConfig->title;
+        }
+
+        // If no database configuration found, return the original code
+        return $titleCode;
+    }
+
+    private function getGenderFromConfig($genderType)
+    {
+        if (empty($genderType)) {
+            return '';
+        }
+
+        $genderConfig = \App\Models\GenderConfiguration::where('gender_code', trim($genderType))->first();
+
+        if ($genderConfig) {
+            return $genderConfig->gender;
+        }
+
+        // If no database configuration found, return the original code
+        return $genderType;
     }
 
     private function getGenderCode($genderType)

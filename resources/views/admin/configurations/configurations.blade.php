@@ -3,7 +3,7 @@
 @section('content')
 <div class="main-content">
 <div>
-	<h2>Configurations - CISA Products</h2>
+	<h2>Product Configuration</h2>
 
 	@if(session('success'))
 		<div class="alert alert-success">{{ session('success') }}</div>
@@ -107,10 +107,10 @@
 										<button type="submit" class="btn btn-outline-primary">Add GL</button>
 									</form>
 									<button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#{{ $modalId }}">Edit</button>
-									<form method="POST" action="{{ route('configurations.products.delete', $product) }}" onsubmit="return confirm('Delete this CISA product? This will remove its GL mappings too.');">
+									<form method="POST" action="{{ route('configurations.products.delete', $product) }}" class="delete-form">
 										@csrf
 										@method('DELETE')
-										<button class="btn btn-outline-danger">Delete</button>
+										<button type="button" class="btn btn-outline-danger delete-btn">Delete</button>
 									</form>
 								</div>
 
@@ -166,6 +166,33 @@
 	</div>
 </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle delete buttons
+    document.querySelectorAll('.delete-btn').forEach(function(button) {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const form = this.closest('.delete-form');
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This will delete the CISA product and remove all its GL mappings. You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+    });
+});
+</script>
 @endsection
 
 
