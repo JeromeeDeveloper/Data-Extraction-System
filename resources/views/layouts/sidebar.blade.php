@@ -16,6 +16,12 @@
                     Data Extraction
                 </a>
             </li>
+            <li>
+                <a href="{{ route('branches.index') }}" class="{{ request()->routeIs('branches.*') ? 'active' : '' }}">
+                    <i class="fas fa-code-branch"></i>
+                    Branch Profile
+                </a>
+            </li>
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle {{ request()->routeIs('configurations.*') ? 'active' : '' }}" data-bs-toggle="dropdown">
                     <i class="fas fa-cogs"></i>
@@ -65,6 +71,7 @@
                     </div>
                 @endif
             </li>
+
         </ul>
     </nav>
 </div>

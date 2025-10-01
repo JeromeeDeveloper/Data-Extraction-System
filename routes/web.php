@@ -74,4 +74,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/configurations/civil/{civilConfiguration}', [ConfigurationsController::class, 'destroyCivil'])->name('configurations.civil.delete');
     Route::post('/configurations/civil/{civilConfiguration}/mbwin', [ConfigurationsController::class, 'addCivilMbwinCode'])->name('configurations.civil.mbwin.store');
     Route::delete('/configurations/civil/{civilConfiguration}/mbwin/{mbwinCode}', [ConfigurationsController::class, 'deleteCivilMbwinCode'])->name('configurations.civil.mbwin.delete');
+
+    // Branch routes
+    Route::get('/branches', [App\Http\Controllers\BranchController::class, 'index'])->name('branches.index');
+    Route::post('/branches', [App\Http\Controllers\BranchController::class, 'store'])->name('branches.store');
+    Route::put('/branches/{branch}', [App\Http\Controllers\BranchController::class, 'update'])->name('branches.update');
+    Route::delete('/branches/{branch}', [App\Http\Controllers\BranchController::class, 'destroy'])->name('branches.destroy');
 });
