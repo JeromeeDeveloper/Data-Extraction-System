@@ -303,7 +303,7 @@ class ExtractionController extends Controller
                 // Get lookup values from database configurations
                 $titleDesc = $this->getTitleFromConfig($record->TitleCode);
                 $genderDesc = $this->getGenderFromConfig($record->GenderType);
-                $civilStatusDesc = $this->getCivilStatusCode($record->CivilStatusCode);
+                $civilStatusDesc = $this->getCivilStatusFromConfig($record->CivilStatusCode);
                 $productTypeDesc = $this->getLookupValue('41', $record->PrType);
                 $frequencyDesc = $this->getLookupValue('FRE', $record->FreqType);
                 $transactionDesc = $this->getLookupValue('TX', $record->TrnType);
@@ -551,52 +551,68 @@ class ExtractionController extends Controller
         return $genderType;
     }
 
-    private function getGenderCode($genderType)
+    private function getCivilStatusFromConfig($civilStatusCode)
     {
-        // Map gender type codes to gender codes as per requirements
-        $genderMapping = [
-            '000' => 'Others',
-            '001' => 'M', // Male
-            '002' => 'F', // Female
-        ];
+        if (empty($civilStatusCode)) {
+            return '';
+        }
 
-        return $genderMapping[$genderType] ?? $genderType;
+        $civilConfig = \App\Models\CivilConfiguration::where('civil_code', trim($civilStatusCode))->first();
+
+        if ($civilConfig) {
+            return $civilConfig->civil_status;
+        }
+
+        // If no database configuration found, return the original code
+        return $civilStatusCode;
     }
 
-    private function getCivilStatusCode($civilStatusCode)
-    {
-        // Map civil status codes to numeric codes as per requirements
-        $civilStatusMapping = [
-            'D00' => '3', // Divorced
-            'M00' => '2', // Married
-            'S00' => '1', // Single
-            'SEP' => '3', // Separated
-            'W00' => '4', // Widowed
-        ];
+    // private function getGenderCode($genderType)
+    // {
+    //     // Map gender type codes to gender codes as per requirements
+    //     $genderMapping = [
+    //         '000' => 'Others',
+    //         '001' => 'M', // Male
+    //         '002' => 'F', // Female
+    //     ];
 
-        return $civilStatusMapping[$civilStatusCode] ?? $civilStatusCode;
-    }
+    //     return $genderMapping[$genderType] ?? $genderType;
+    // }
 
-    private function getTitleAcronymCode($titleCode)
-    {
-        // Map title codes to numeric acronym codes as per requirements
-        $titleMapping = [
-            '000' => '', // Unknown
-            '001' => '10', // Mr
-            '002' => '11', // Ms
-            '003' => '13', // Mrs
-            '004' => '14', // Dr
-            '005' => '15', // Prof
-            '006' => '', // Atty (no code specified)
-            '007' => '21', // Rev
-            '008' => '21', // Fr
-            '009' => '16', // Hon
-            '010' => '10', // Engr
-            '011' => '12', // Sr
-        ];
+    // private function getCivilStatusCode($civilStatusCode)
+    // {
+    //     // Map civil status codes to numeric codes as per requirements
+    //     $civilStatusMapping = [
+    //         'D00' => '3', // Divorced
+    //         'M00' => '2', // Married
+    //         'S00' => '1', // Single
+    //         'SEP' => '3', // Separated
+    //         'W00' => '4', // Widowed
+    //     ];
 
-        return $titleMapping[$titleCode] ?? $titleCode;
-    }
+    //     return $civilStatusMapping[$civilStatusCode] ?? $civilStatusCode;
+    // }
+
+    // private function getTitleAcronymCode($titleCode)
+    // {
+    //     // Map title codes to numeric acronym codes as per requirements
+    //     $titleMapping = [
+    //         '000' => '', // Unknown
+    //         '001' => '10', // Mr
+    //         '002' => '11', // Ms
+    //         '003' => '13', // Mrs
+    //         '004' => '14', // Dr
+    //         '005' => '15', // Prof
+    //         '006' => '', // Atty (no code specified)
+    //         '007' => '21', // Rev
+    //         '008' => '21', // Fr
+    //         '009' => '16', // Hon
+    //         '010' => '10', // Engr
+    //         '011' => '12', // Sr
+    //     ];
+
+    //     return $titleMapping[$titleCode] ?? $titleCode;
+    // }
 
     private function getAddressTypeCode($addrType)
     {

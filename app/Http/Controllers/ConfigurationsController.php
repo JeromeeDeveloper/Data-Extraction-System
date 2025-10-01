@@ -6,6 +6,7 @@ use App\Models\CisaProduct;
 use App\Models\CisaProductGlCode;
 use App\Models\TitleConfiguration;
 use App\Models\GenderConfiguration;
+use App\Models\CivilConfiguration;
 use Illuminate\Http\Request;
 
 class ConfigurationsController extends Controller
@@ -174,6 +175,54 @@ class ConfigurationsController extends Controller
 	{
 		$genderConfiguration->delete();
 		return back()->with('success', 'Gender configuration deleted');
+	}
+
+	public function civil()
+	{
+		$query = CivilConfiguration::orderBy('civil_code');
+
+		if (request('q')) {
+			$q = trim(request('q'));
+			$query->where(function($w) use ($q) {
+				$w->where('civil_code', 'like', "%$q%")
+				  ->orWhere('civil_status', 'like', "%$q%");
+			});
+		}
+
+		$civils = $query->paginate(10)->withQueryString();
+		return view('admin.configurations.civil', compact('civils'));
+	}
+
+	public function storeCivil(Request $request)
+	{
+		$validated = $request->validate([
+			'civil_code' => 'required|string|max:50|unique:civil_configurations,civil_code',
+			'civil_status' => 'required|string|max:255',
+		], [
+			'civil_code.unique' => 'Civil code already exists.',
+		]);
+
+		CivilConfiguration::create($validated);
+		return back()->with('success', 'Civil configuration created');
+	}
+
+	public function updateCivil(Request $request, CivilConfiguration $civilConfiguration)
+	{
+		$validated = $request->validate([
+			'civil_code' => 'required|string|max:50|unique:civil_configurations,civil_code,' . $civilConfiguration->id,
+			'civil_status' => 'required|string|max:255',
+		], [
+			'civil_code.unique' => 'Civil code already exists.',
+		]);
+
+		$civilConfiguration->update($validated);
+		return back()->with('success', 'Civil configuration updated');
+	}
+
+	public function destroyCivil(CivilConfiguration $civilConfiguration)
+	{
+		$civilConfiguration->delete();
+		return back()->with('success', 'Civil configuration deleted');
 	}
 }
 

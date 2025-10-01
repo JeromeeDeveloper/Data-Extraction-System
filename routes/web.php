@@ -62,4 +62,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/configurations/gender', [ConfigurationsController::class, 'storeGender'])->name('configurations.gender.store');
     Route::put('/configurations/gender/{genderConfiguration}', [ConfigurationsController::class, 'updateGender'])->name('configurations.gender.update');
     Route::delete('/configurations/gender/{genderConfiguration}', [ConfigurationsController::class, 'destroyGender'])->name('configurations.gender.delete');
+
+    // Civil Status Configuration routes
+    Route::get('/configurations/civil', [ConfigurationsController::class, 'civil'])->name('configurations.civil');
+    Route::post('/configurations/civil', [ConfigurationsController::class, 'storeCivil'])->name('configurations.civil.store');
+    Route::put('/configurations/civil/{civilConfiguration}', [ConfigurationsController::class, 'updateCivil'])->name('configurations.civil.update');
+    Route::delete('/configurations/civil/{civilConfiguration}', [ConfigurationsController::class, 'destroyCivil'])->name('configurations.civil.delete');
 });

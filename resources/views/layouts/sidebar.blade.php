@@ -41,6 +41,12 @@
                             Gender Configuration
                         </a>
                     </li>
+                    <li>
+                        <a href="{{ route('configurations.civil') }}" class="{{ request()->routeIs('configurations.civil') ? 'active' : '' }}">
+                            <i class="fas fa-heart"></i>
+                            Civil Status Configuration
+                        </a>
+                    </li>
                 </ul>
             </li>
         </ul>
