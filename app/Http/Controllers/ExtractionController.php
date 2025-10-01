@@ -343,6 +343,7 @@ class ExtractionController extends Controller
 
                 // Determine Record Type from CISA Products (CI for installment, CN for non-installment). Skip if no match
                 $resolvedRecordType = null;
+                $contractTypeCisaCode = null;
                 try {
                     $matchedProduct = null;
                     // Try to match PrType (contract type) against gl_code in CisaProductGlCode
@@ -361,6 +362,7 @@ class ExtractionController extends Controller
                     }
                     if ($matchedProduct) {
                         $resolvedRecordType = $matchedProduct->type === 'installment' ? 'CI' : 'CN';
+                        $contractTypeCisaCode = $matchedProduct->cisa_code; // Store CISA code for Contract Type
                     }
                 } catch (\Throwable $e) {
                     \Log::error("Error in record type determination: " . $e->getMessage());
@@ -431,7 +433,7 @@ class ExtractionController extends Controller
                     'Trade Name' => trim(($record->LastName ?? '') . ' ' . ($record->FirstName ?? '')),
                     'Role' => 'B',
                     'Provider Contract No' => $branchCode . $record->LoanAcc . $record->LoanChd,
-                    'Contract Type' => $productTypeDesc,
+                    'Contract Type' => $contractTypeCisaCode ?? $productTypeDesc,
                     'Contract Phase' => $this->getContractPhaseCode($record->AccStatus ?? '', $record->MatDate, $record->AccStatusDate),
                     'Currency' => $record->CcyType ?? '',
                     'Original Currency' => $record->CcyType ?? '',
