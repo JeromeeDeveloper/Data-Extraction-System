@@ -10,7 +10,12 @@ class TitleConfiguration extends Model
 	use HasFactory;
 
 	protected $fillable = [
-		'title_code',
-		'title',
+		'cisa_code',
+		'description',
 	];
+
+	public function mbwinCodes()
+	{
+		return $this->hasMany(TitleMbwinCode::class);
+	}
 }

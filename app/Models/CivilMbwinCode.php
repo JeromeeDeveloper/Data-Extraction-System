@@ -5,17 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class CivilConfiguration extends Model
+class CivilMbwinCode extends Model
 {
 	use HasFactory;
 
 	protected $fillable = [
-		'cisa_code',
-		'description',
+		'civil_configuration_id',
+		'mbwin_code',
 	];
 
-	public function mbwinCodes()
+	public function civilConfiguration()
 	{
-		return $this->hasMany(CivilMbwinCode::class);
+		return $this->belongsTo(CivilConfiguration::class);
 	}
 }

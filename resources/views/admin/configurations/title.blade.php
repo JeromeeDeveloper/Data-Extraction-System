@@ -16,16 +16,16 @@
 				@csrf
 				<div class="row g-3">
 					<div class="col-md-4">
-						<label class="form-label">Title Code</label>
-						<input type="text" name="title_code" class="form-control @error('title_code') is-invalid @enderror" value="{{ old('title_code') }}" required>
-						@error('title_code')
+						<label class="form-label">CISA Code</label>
+						<input type="text" name="cisa_code" class="form-control @error('cisa_code') is-invalid @enderror" value="{{ old('cisa_code') }}" required>
+						@error('cisa_code')
 							<div class="invalid-feedback">{{ $message }}</div>
 						@enderror
 					</div>
 					<div class="col-md-6">
-						<label class="form-label">Title</label>
-						<input type="text" name="title" class="form-control @error('title') is-invalid @enderror" value="{{ old('title') }}" required>
-						@error('title')
+						<label class="form-label">Description</label>
+						<input type="text" name="description" class="form-control @error('description') is-invalid @enderror" value="{{ old('description') }}" required>
+						@error('description')
 							<div class="invalid-feedback">{{ $message }}</div>
 						@enderror
 					</div>
@@ -42,7 +42,7 @@
 		<div class="card-body">
 			<form method="GET" action="{{ route('configurations.title') }}" class="row g-2 mb-3">
 				<div class="col-md-4">
-					<input type="text" name="q" class="form-control" value="{{ request('q') }}" placeholder="Search title code or title...">
+					<input type="text" name="q" class="form-control" value="{{ request('q') }}" placeholder="Search CISA code or description...">
 				</div>
 				<div class="col-md-2 d-grid">
 					<button class="btn btn-outline-primary">Search</button>
@@ -54,8 +54,9 @@
 			<table class="table table-bordered align-middle">
 				<thead>
 					<tr>
-						<th style="width: 200px;">Title Code</th>
-						<th>Title</th>
+						<th style="width: 200px;">CISA Code</th>
+						<th>Description</th>
+						<th>MBWIN Codes</th>
 						<th style="width: 200px;">Actions</th>
 					</tr>
 				</thead>
@@ -63,10 +64,36 @@
 					@forelse($titles as $title)
 						@php $modalId = 'edit-title-'.$title->id; @endphp
 						<tr>
-							<td class="align-middle">{{ $title->title_code }}</td>
-							<td class="align-middle">{{ $title->title }}</td>
+							<td class="align-middle">{{ $title->cisa_code }}</td>
+							<td class="align-middle">{{ $title->description }}</td>
 							<td>
-								<div class="d-flex gap-2">
+								@if($title->mbwinCodes->isEmpty())
+									<span class="text-muted">No MBWIN codes yet</span>
+								@else
+									<div class="d-flex flex-wrap gap-2">
+										@foreach($title->mbwinCodes as $mbwin)
+											<form method="POST" action="{{ route('configurations.title.mbwin.delete', [$title, $mbwin]) }}">
+												@csrf
+												@method('DELETE')
+												<span class="badge bg-secondary">{{ $mbwin->mbwin_code }}</span>
+												<button class="btn btn-sm btn-outline-danger ms-2">Remove</button>
+											</form>
+										@endforeach
+									</div>
+								@endif
+							</td>
+							<td>
+								<div class="d-flex gap-2 align-items-start flex-wrap">
+									<form class="d-flex gap-2 flex-grow-1" method="POST" action="{{ route('configurations.title.mbwin.store', $title) }}">
+										@csrf
+										<div class="flex-grow-1">
+											<input type="text" name="mbwin_code" class="form-control @error('mbwin_code') is-invalid @enderror" placeholder="Enter MBWIN Code" required>
+											@error('mbwin_code')
+												<div class="invalid-feedback">{{ $message }}</div>
+											@enderror
+										</div>
+										<button type="submit" class="btn btn-outline-primary">Add MBWIN</button>
+									</form>
 									<button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#{{ $modalId }}">Edit</button>
 									<form method="POST" action="{{ route('configurations.title.delete', $title) }}" class="delete-form">
 										@csrf
@@ -87,12 +114,12 @@
 													</div>
 													<div class="modal-body">
 														<div class="mb-3">
-															<label class="form-label">Title Code</label>
-															<input type="text" name="title_code" value="{{ $title->title_code }}" class="form-control" required>
+															<label class="form-label">CISA Code</label>
+															<input type="text" name="cisa_code" value="{{ $title->cisa_code }}" class="form-control" required>
 														</div>
 														<div class="mb-2">
-															<label class="form-label">Title</label>
-															<input type="text" name="title" value="{{ $title->title }}" class="form-control" required>
+															<label class="form-label">Description</label>
+															<input type="text" name="description" value="{{ $title->description }}" class="form-control" required>
 														</div>
 													</div>
 													<div class="modal-footer">
@@ -117,8 +144,9 @@
 				{{ $titles->links() }}
 			</div>
 		</div>
+		</div>
 	</div>
-</div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

@@ -10,7 +10,12 @@ class GenderConfiguration extends Model
 	use HasFactory;
 
 	protected $fillable = [
-		'gender_code',
-		'gender',
+		'cisa_code',
+		'description',
 	];
+
+	public function mbwinCodes()
+	{
+		return $this->hasMany(GenderMbwinCode::class);
+	}
 }

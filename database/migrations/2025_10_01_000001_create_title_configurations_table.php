@@ -10,8 +10,8 @@ return new class extends Migration
 	{
 		Schema::create('title_configurations', function (Blueprint $table) {
 			$table->id();
-			$table->string('title_code')->unique();
-			$table->string('title');
+			$table->string('cisa_code')->unique();
+			$table->string('description');
 			$table->timestamps();
 		});
 	}

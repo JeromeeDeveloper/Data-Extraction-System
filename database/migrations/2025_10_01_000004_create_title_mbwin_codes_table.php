@@ -8,16 +8,16 @@ return new class extends Migration
 {
 	public function up(): void
 	{
-		Schema::create('gender_configurations', function (Blueprint $table) {
+		Schema::create('title_mbwin_codes', function (Blueprint $table) {
 			$table->id();
-			$table->string('cisa_code')->unique();
-			$table->string('description');
+			$table->foreignId('title_configuration_id')->constrained('title_configurations')->cascadeOnDelete();
+			$table->string('mbwin_code')->unique();
 			$table->timestamps();
 		});
 	}
 
 	public function down(): void
 	{
-		Schema::dropIfExists('gender_configurations');
+		Schema::dropIfExists('title_mbwin_codes');
 	}
 };

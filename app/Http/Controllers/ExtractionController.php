@@ -525,10 +525,10 @@ class ExtractionController extends Controller
             return '';
         }
 
-        $titleConfig = \App\Models\TitleConfiguration::where('title_code', trim($titleCode))->first();
-
-        if ($titleConfig) {
-            return $titleConfig->title;
+        // First try to match by MBWIN code
+        $mbwinMatch = \App\Models\TitleMbwinCode::where('mbwin_code', trim($titleCode))->first();
+        if ($mbwinMatch) {
+            return $mbwinMatch->titleConfiguration->cisa_code;
         }
 
         // If no database configuration found, return the original code
@@ -541,10 +541,10 @@ class ExtractionController extends Controller
             return '';
         }
 
-        $genderConfig = \App\Models\GenderConfiguration::where('gender_code', trim($genderType))->first();
-
-        if ($genderConfig) {
-            return $genderConfig->gender;
+        // First try to match by MBWIN code
+        $mbwinMatch = \App\Models\GenderMbwinCode::where('mbwin_code', trim($genderType))->first();
+        if ($mbwinMatch) {
+            return $mbwinMatch->genderConfiguration->cisa_code;
         }
 
         // If no database configuration found, return the original code
@@ -557,10 +557,10 @@ class ExtractionController extends Controller
             return '';
         }
 
-        $civilConfig = \App\Models\CivilConfiguration::where('civil_code', trim($civilStatusCode))->first();
-
-        if ($civilConfig) {
-            return $civilConfig->civil_status;
+        // First try to match by MBWIN code
+        $mbwinMatch = \App\Models\CivilMbwinCode::where('mbwin_code', trim($civilStatusCode))->first();
+        if ($mbwinMatch) {
+            return $mbwinMatch->civilConfiguration->cisa_code;
         }
 
         // If no database configuration found, return the original code

@@ -56,16 +56,22 @@ Route::middleware('auth')->group(function () {
     Route::post('/configurations/title', [ConfigurationsController::class, 'storeTitle'])->name('configurations.title.store');
     Route::put('/configurations/title/{titleConfiguration}', [ConfigurationsController::class, 'updateTitle'])->name('configurations.title.update');
     Route::delete('/configurations/title/{titleConfiguration}', [ConfigurationsController::class, 'destroyTitle'])->name('configurations.title.delete');
+    Route::post('/configurations/title/{titleConfiguration}/mbwin', [ConfigurationsController::class, 'addTitleMbwinCode'])->name('configurations.title.mbwin.store');
+    Route::delete('/configurations/title/{titleConfiguration}/mbwin/{mbwinCode}', [ConfigurationsController::class, 'deleteTitleMbwinCode'])->name('configurations.title.mbwin.delete');
 
     // Gender Configuration routes
     Route::get('/configurations/gender', [ConfigurationsController::class, 'gender'])->name('configurations.gender');
     Route::post('/configurations/gender', [ConfigurationsController::class, 'storeGender'])->name('configurations.gender.store');
     Route::put('/configurations/gender/{genderConfiguration}', [ConfigurationsController::class, 'updateGender'])->name('configurations.gender.update');
     Route::delete('/configurations/gender/{genderConfiguration}', [ConfigurationsController::class, 'destroyGender'])->name('configurations.gender.delete');
+    Route::post('/configurations/gender/{genderConfiguration}/mbwin', [ConfigurationsController::class, 'addGenderMbwinCode'])->name('configurations.gender.mbwin.store');
+    Route::delete('/configurations/gender/{genderConfiguration}/mbwin/{mbwinCode}', [ConfigurationsController::class, 'deleteGenderMbwinCode'])->name('configurations.gender.mbwin.delete');
 
     // Civil Status Configuration routes
     Route::get('/configurations/civil', [ConfigurationsController::class, 'civil'])->name('configurations.civil');
     Route::post('/configurations/civil', [ConfigurationsController::class, 'storeCivil'])->name('configurations.civil.store');
     Route::put('/configurations/civil/{civilConfiguration}', [ConfigurationsController::class, 'updateCivil'])->name('configurations.civil.update');
     Route::delete('/configurations/civil/{civilConfiguration}', [ConfigurationsController::class, 'destroyCivil'])->name('configurations.civil.delete');
+    Route::post('/configurations/civil/{civilConfiguration}/mbwin', [ConfigurationsController::class, 'addCivilMbwinCode'])->name('configurations.civil.mbwin.store');
+    Route::delete('/configurations/civil/{civilConfiguration}/mbwin/{mbwinCode}', [ConfigurationsController::class, 'deleteCivilMbwinCode'])->name('configurations.civil.mbwin.delete');
 });

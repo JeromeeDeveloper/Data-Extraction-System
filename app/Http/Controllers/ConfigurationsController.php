@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\CisaProduct;
 use App\Models\CisaProductGlCode;
 use App\Models\TitleConfiguration;
+use App\Models\TitleMbwinCode;
 use App\Models\GenderConfiguration;
+use App\Models\GenderMbwinCode;
 use App\Models\CivilConfiguration;
+use App\Models\CivilMbwinCode;
 use Illuminate\Http\Request;
 
 class ConfigurationsController extends Controller
@@ -83,13 +86,13 @@ class ConfigurationsController extends Controller
 
 	public function title()
 	{
-		$query = TitleConfiguration::orderBy('title_code');
+		$query = TitleConfiguration::with('mbwinCodes')->orderBy('cisa_code');
 
 		if (request('q')) {
 			$q = trim(request('q'));
 			$query->where(function($w) use ($q) {
-				$w->where('title_code', 'like', "%$q%")
-				  ->orWhere('title', 'like', "%$q%");
+				$w->where('cisa_code', 'like', "%$q%")
+				  ->orWhere('description', 'like', "%$q%");
 			});
 		}
 
@@ -100,10 +103,10 @@ class ConfigurationsController extends Controller
 	public function storeTitle(Request $request)
 	{
 		$validated = $request->validate([
-			'title_code' => 'required|string|max:50|unique:title_configurations,title_code',
-			'title' => 'required|string|max:255',
+			'cisa_code' => 'required|string|max:50|unique:title_configurations,cisa_code',
+			'description' => 'required|string|max:255',
 		], [
-			'title_code.unique' => 'Title code already exists.',
+			'cisa_code.unique' => 'CISA code already exists.',
 		]);
 
 		TitleConfiguration::create($validated);
@@ -113,14 +116,33 @@ class ConfigurationsController extends Controller
 	public function updateTitle(Request $request, TitleConfiguration $titleConfiguration)
 	{
 		$validated = $request->validate([
-			'title_code' => 'required|string|max:50|unique:title_configurations,title_code,' . $titleConfiguration->id,
-			'title' => 'required|string|max:255',
+			'cisa_code' => 'required|string|max:50|unique:title_configurations,cisa_code,' . $titleConfiguration->id,
+			'description' => 'required|string|max:255',
 		], [
-			'title_code.unique' => 'Title code already exists.',
+			'cisa_code.unique' => 'CISA code already exists.',
 		]);
 
 		$titleConfiguration->update($validated);
 		return back()->with('success', 'Title configuration updated');
+	}
+
+	public function addTitleMbwinCode(Request $request, TitleConfiguration $titleConfiguration)
+	{
+		$validated = $request->validate([
+			'mbwin_code' => 'required|string|max:50|unique:title_mbwin_codes,mbwin_code',
+		], [
+			'mbwin_code.unique' => 'MBWIN code already exists.',
+		]);
+
+		$titleConfiguration->mbwinCodes()->create($validated);
+		return back()->with('success', 'MBWIN code added');
+	}
+
+	public function deleteTitleMbwinCode(TitleConfiguration $titleConfiguration, TitleMbwinCode $mbwinCode)
+	{
+		abort_if($mbwinCode->title_configuration_id !== $titleConfiguration->id, 404);
+		$mbwinCode->delete();
+		return back()->with('success', 'MBWIN code removed');
 	}
 
 	public function destroyTitle(TitleConfiguration $titleConfiguration)
@@ -131,13 +153,13 @@ class ConfigurationsController extends Controller
 
 	public function gender()
 	{
-		$query = GenderConfiguration::orderBy('gender_code');
+		$query = GenderConfiguration::with('mbwinCodes')->orderBy('cisa_code');
 
 		if (request('q')) {
 			$q = trim(request('q'));
 			$query->where(function($w) use ($q) {
-				$w->where('gender_code', 'like', "%$q%")
-				  ->orWhere('gender', 'like', "%$q%");
+				$w->where('cisa_code', 'like', "%$q%")
+				  ->orWhere('description', 'like', "%$q%");
 			});
 		}
 
@@ -148,10 +170,10 @@ class ConfigurationsController extends Controller
 	public function storeGender(Request $request)
 	{
 		$validated = $request->validate([
-			'gender_code' => 'required|string|max:50|unique:gender_configurations,gender_code',
-			'gender' => 'required|string|max:255',
+			'cisa_code' => 'required|string|max:50|unique:gender_configurations,cisa_code',
+			'description' => 'required|string|max:255',
 		], [
-			'gender_code.unique' => 'Gender code already exists.',
+			'cisa_code.unique' => 'CISA code already exists.',
 		]);
 
 		GenderConfiguration::create($validated);
@@ -161,14 +183,33 @@ class ConfigurationsController extends Controller
 	public function updateGender(Request $request, GenderConfiguration $genderConfiguration)
 	{
 		$validated = $request->validate([
-			'gender_code' => 'required|string|max:50|unique:gender_configurations,gender_code,' . $genderConfiguration->id,
-			'gender' => 'required|string|max:255',
+			'cisa_code' => 'required|string|max:50|unique:gender_configurations,cisa_code,' . $genderConfiguration->id,
+			'description' => 'required|string|max:255',
 		], [
-			'gender_code.unique' => 'Gender code already exists.',
+			'cisa_code.unique' => 'CISA code already exists.',
 		]);
 
 		$genderConfiguration->update($validated);
 		return back()->with('success', 'Gender configuration updated');
+	}
+
+	public function addGenderMbwinCode(Request $request, GenderConfiguration $genderConfiguration)
+	{
+		$validated = $request->validate([
+			'mbwin_code' => 'required|string|max:50|unique:gender_mbwin_codes,mbwin_code',
+		], [
+			'mbwin_code.unique' => 'MBWIN code already exists.',
+		]);
+
+		$genderConfiguration->mbwinCodes()->create($validated);
+		return back()->with('success', 'MBWIN code added');
+	}
+
+	public function deleteGenderMbwinCode(GenderConfiguration $genderConfiguration, GenderMbwinCode $mbwinCode)
+	{
+		abort_if($mbwinCode->gender_configuration_id !== $genderConfiguration->id, 404);
+		$mbwinCode->delete();
+		return back()->with('success', 'MBWIN code removed');
 	}
 
 	public function destroyGender(GenderConfiguration $genderConfiguration)
@@ -179,13 +220,13 @@ class ConfigurationsController extends Controller
 
 	public function civil()
 	{
-		$query = CivilConfiguration::orderBy('civil_code');
+		$query = CivilConfiguration::with('mbwinCodes')->orderBy('cisa_code');
 
 		if (request('q')) {
 			$q = trim(request('q'));
 			$query->where(function($w) use ($q) {
-				$w->where('civil_code', 'like', "%$q%")
-				  ->orWhere('civil_status', 'like', "%$q%");
+				$w->where('cisa_code', 'like', "%$q%")
+				  ->orWhere('description', 'like', "%$q%");
 			});
 		}
 
@@ -196,10 +237,10 @@ class ConfigurationsController extends Controller
 	public function storeCivil(Request $request)
 	{
 		$validated = $request->validate([
-			'civil_code' => 'required|string|max:50|unique:civil_configurations,civil_code',
-			'civil_status' => 'required|string|max:255',
+			'cisa_code' => 'required|string|max:50|unique:civil_configurations,cisa_code',
+			'description' => 'required|string|max:255',
 		], [
-			'civil_code.unique' => 'Civil code already exists.',
+			'cisa_code.unique' => 'CISA code already exists.',
 		]);
 
 		CivilConfiguration::create($validated);
@@ -209,14 +250,33 @@ class ConfigurationsController extends Controller
 	public function updateCivil(Request $request, CivilConfiguration $civilConfiguration)
 	{
 		$validated = $request->validate([
-			'civil_code' => 'required|string|max:50|unique:civil_configurations,civil_code,' . $civilConfiguration->id,
-			'civil_status' => 'required|string|max:255',
+			'cisa_code' => 'required|string|max:50|unique:civil_configurations,cisa_code,' . $civilConfiguration->id,
+			'description' => 'required|string|max:255',
 		], [
-			'civil_code.unique' => 'Civil code already exists.',
+			'cisa_code.unique' => 'CISA code already exists.',
 		]);
 
 		$civilConfiguration->update($validated);
 		return back()->with('success', 'Civil configuration updated');
+	}
+
+	public function addCivilMbwinCode(Request $request, CivilConfiguration $civilConfiguration)
+	{
+		$validated = $request->validate([
+			'mbwin_code' => 'required|string|max:50|unique:civil_mbwin_codes,mbwin_code',
+		], [
+			'mbwin_code.unique' => 'MBWIN code already exists.',
+		]);
+
+		$civilConfiguration->mbwinCodes()->create($validated);
+		return back()->with('success', 'MBWIN code added');
+	}
+
+	public function deleteCivilMbwinCode(CivilConfiguration $civilConfiguration, CivilMbwinCode $mbwinCode)
+	{
+		abort_if($mbwinCode->civil_configuration_id !== $civilConfiguration->id, 404);
+		$mbwinCode->delete();
+		return back()->with('success', 'MBWIN code removed');
 	}
 
 	public function destroyCivil(CivilConfiguration $civilConfiguration)
