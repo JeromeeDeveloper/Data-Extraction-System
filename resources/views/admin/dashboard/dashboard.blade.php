@@ -149,10 +149,7 @@
                     </div>
                     <div class="card-body">
                         <div class="info-grid">
-                            <div class="info-item">
-                                <span class="info-label">Total Tables</span>
-                                <span class="info-value">7</span>
-                            </div>
+
                             <div class="info-item">
                                 <span class="info-label">Export Fields</span>
                                 <span class="info-value">70+</span>
@@ -161,10 +158,7 @@
                                 <span class="info-label">File Format</span>
                                 <span class="info-value">Excel</span>
                             </div>
-                            <div class="info-item">
-                                <span class="info-label">Status</span>
-                                <span class="info-value success">Active</span>
-                            </div>
+                           
                         </div>
                     </div>
                 </div>
