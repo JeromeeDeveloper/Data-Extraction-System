@@ -92,7 +92,7 @@ class ExtractionController extends Controller
             ]);
 
             // Get branch information
-            $branchInfo = DB::connection('sqlsrv2')->select("SELECT Br, BrName, SystemCode, ManagerName, Address, FinYear FROM Microbanker.dbo.BRPARMS")[0] ?? null;
+            $branchInfo = DB::connection('sqlsrv2')->select("SELECT Br, BrName, SystemCode, ManagerName, Address, FinYear, CurrRunDate FROM Microbanker.dbo.BRPARMS")[0] ?? null;
             $branchCode = $branchInfo->Br ?? '';
             $branchName = $branchInfo->BrName ?? '';
             $systemCode = $branchInfo->SystemCode ?? '';
@@ -377,7 +377,7 @@ class ExtractionController extends Controller
                     'Record Type' => $resolvedRecordType,
                     'Provider Code' => 'MB001',
                     'Branch Code' => $branchCode,
-                    'Subject Reference Date' => $record->RegisterDate ? date('dmY', strtotime($record->RegisterDate)) : '',
+                    'Subject Reference Date' => $branchInfo->CurrRunDate ? date('dmY', strtotime($branchInfo->CurrRunDate)) : '',
                     'Provider Subject No' => ($record->CID ?? '') . $branchCode,
                     'Title' => $titleDesc,
                     'First Name' => $record->FirstName ?? '',
