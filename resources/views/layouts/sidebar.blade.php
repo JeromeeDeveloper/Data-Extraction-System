@@ -48,6 +48,22 @@
                         </a>
                     </li>
                 </ul>
+                @if(request()->routeIs('configurations.*'))
+                    <div class="selected-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>
+                            @if(request()->routeIs('configurations.index'))
+                                <i class="fas fa-box"></i> Product Configuration
+                            @elseif(request()->routeIs('configurations.title'))
+                                <i class="fas fa-user-tag"></i> Title Configuration
+                            @elseif(request()->routeIs('configurations.gender'))
+                                <i class="fas fa-venus-mars"></i> Gender Configuration
+                            @elseif(request()->routeIs('configurations.civil'))
+                                <i class="fas fa-heart"></i> Civil Status Configuration
+                            @endif
+                        </span>
+                    </div>
+                @endif
             </li>
         </ul>
     </nav>
@@ -170,6 +186,47 @@
 .dropdown-menu a.active {
     background: #3498db;
     border-left-color: #2980b9;
+}
+
+/* Selected item display */
+.selected-item {
+    background: #27ae60;
+    color: white;
+    padding: 8px 20px;
+    margin: 5px 0;
+    border-radius: 4px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: slideIn 0.3s ease;
+}
+
+.selected-item i.fa-check-circle {
+    color: #2ecc71;
+    font-size: 12px;
+}
+
+.selected-item span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.selected-item span i {
+    font-size: 11px;
+    opacity: 0.9;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 
