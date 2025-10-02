@@ -64,11 +64,11 @@
 			<table class="table table-bordered align-middle" style="table-layout: fixed;">
 				<thead>
 					<tr>
-						<th style="width: 160px;">CISA Code</th>
-						<th style="width: 35%;">Description</th>
-						<th style="width: 180px;">Type</th>
-						<th style="width: 25%;">GL Codes</th>
-						<th style="width: 350px;">Edit / Add GL Code</th>
+						<th>CISA Code</th>
+						<th>Description</th>
+						<th>Type</th>
+						<th>GL Codes</th>
+						<th>Actions</th>
 					</tr>
 				</thead>
 				<tbody>

@@ -54,10 +54,10 @@
 			<table class="table table-bordered align-middle">
 				<thead>
 					<tr>
-						<th style="width: 200px;">CISA Code</th>
+						<th>CISA Code</th>
 						<th>Description</th>
 						<th>MBWIN Codes</th>
-						<th style="width: 200px;">Actions</th>
+						<th>Actions</th>
 					</tr>
 				</thead>
 				<tbody>

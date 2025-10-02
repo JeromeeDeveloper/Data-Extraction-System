@@ -202,6 +202,7 @@ class ExtractionController extends Controller
                     instagg.OutstandingCount as OutstandingInstCount,
                     instagg.OverdueCount as OverdueInstCount,
                     instagg.OverdueAmount as OverdueInstAmount,
+                    instagg.InstStatus as Status,
                     l.Acc as LoanAcc,
                     l.Chd as LoanChd,
                     l.PrType,
@@ -271,7 +272,8 @@ class ExtractionController extends Controller
                            MIN(CASE WHEN li.PaidDate IS NULL THEN li.DueDate END) as NextDueDate,
                            SUM(CASE WHEN li.PaidDate IS NULL THEN 1 ELSE 0 END) as OutstandingCount,
                            SUM(CASE WHEN li.PaidDate IS NULL AND li.DueDate < GETDATE() THEN 1 ELSE 0 END) as OverdueCount,
-                           SUM(CASE WHEN li.PaidDate IS NULL AND li.DueDate < GETDATE() THEN COALESCE(li.PriAmt,0)+COALESCE(li.IntAmt,0)+COALESCE(li.ChargesAmt,0) ELSE 0 END) as OverdueAmount
+                           SUM(CASE WHEN li.PaidDate IS NULL AND li.DueDate < GETDATE() THEN COALESCE(li.PriAmt,0)+COALESCE(li.IntAmt,0)+COALESCE(li.ChargesAmt,0) ELSE 0 END) as OverdueAmount,
+                           MAX(li.Status) as InstStatus
                     FROM Microbanker.dbo.LNINST li
                     GROUP BY li.Acc, li.Chd
                 ) instagg ON instagg.Acc = l.Acc AND instagg.Chd = l.Chd
@@ -451,7 +453,7 @@ class ExtractionController extends Controller
                     'Outstanding Balance' => round(($record->BalAmt ?? 0) / 100),
                     'Overdue Payments Number' => isset($record->OverdueInstCount) ? (int)$record->OverdueInstCount : 0,
                     'Overdue Payments Amount' => round((($record->OdueIntAmt ?? 0) + ($record->OduePriAmt ?? 0)) / 100),
-                    'Overdue Days' => $record->LateDaysNo ?? 0,
+                    'Overdue Days' => $this->getOverdueDaysCode($record->Status ?? '', $record->LoanAcc ?? '', $branchInfo->CurrRunDate ?? null),
                     'Credit Limit' => $record->GrantedAmtOrig ?? 0
                 ];
 
@@ -678,6 +680,80 @@ class ExtractionController extends Controller
         ];
 
         return $periodicityMapping[$freqType] ?? $freqType;
+    }
+
+    private function getOverdueDaysCode($status, $loanAcc, $currRunDate)
+    {
+        \Log::info("DEBUG: getOverdueDaysCode called with status='{$status}', loanAcc='{$loanAcc}', currRunDate='{$currRunDate}'");
+
+        // If status is 1, calculate based on DATEDIFF logic
+        if ($status == '1') {
+            \Log::info("DEBUG: Status is 1, proceeding with DATEDIFF calculation");
+            try {
+                if (empty($loanAcc) || empty($currRunDate)) {
+                    \Log::info("DEBUG: Empty loanAcc or currRunDate - loanAcc: '{$loanAcc}', currRunDate: '{$currRunDate}', returning '0'");
+                    return '0';
+                }
+
+                // Use SQL DATEDIFF to calculate days difference properly for Status 1 installments
+                $datediffQuery = "
+                    SELECT
+                        MIN(i.DueDate) AS OldestDueDate,
+                        DATEDIFF(DAY, MIN(i.DueDate), ?) AS DaysDifference,
+                        CASE
+                            WHEN DATEDIFF(DAY, MIN(i.DueDate), ?) = 0
+                                THEN 0
+                            WHEN DATEDIFF(DAY, MIN(i.DueDate), ?) BETWEEN 1 AND 30
+                                THEN 1
+                            WHEN DATEDIFF(DAY, MIN(i.DueDate), ?) BETWEEN 31 AND 60
+                                THEN 2
+                            WHEN DATEDIFF(DAY, MIN(i.DueDate), ?) BETWEEN 61 AND 90
+                                THEN 3
+                            WHEN DATEDIFF(DAY, MIN(i.DueDate), ?) BETWEEN 91 AND 180
+                                THEN 4
+                            WHEN DATEDIFF(DAY, MIN(i.DueDate), ?) BETWEEN 181 AND 365
+                                THEN 5
+                            WHEN DATEDIFF(DAY, MIN(i.DueDate), ?) > 365
+                                THEN 6
+                            ELSE 0
+                        END AS OverdueDaysCode
+                    FROM Microbanker.dbo.Lninst i
+                    WHERE i.Acc = ? AND i.Status = 1
+                    GROUP BY i.Acc
+                ";
+
+                \Log::info("DEBUG: Executing DATEDIFF query: {$datediffQuery} with loanAcc: {$loanAcc}, currRunDate: {$currRunDate}");
+                $datediffResult = DB::connection('sqlsrv2')->select($datediffQuery, [
+                    $currRunDate, $currRunDate, $currRunDate, $currRunDate,
+                    $currRunDate, $currRunDate, $currRunDate, $currRunDate, $loanAcc
+                ]);
+
+                \Log::info("DEBUG: DATEDIFF Query result: " . json_encode($datediffResult));
+
+                if (empty($datediffResult) || empty($datediffResult[0]->OldestDueDate)) {
+                    \Log::info("DEBUG: No Status 1 installments found, returning '0'");
+                    return '0'; // No Status 1 installments, current
+                }
+
+                $result = $datediffResult[0];
+                $daysDiff = $result->DaysDifference;
+                $overdueDaysCode = $result->OverdueDaysCode;
+
+                \Log::info("DEBUG: Oldest due date: {$result->OldestDueDate}");
+                \Log::info("DEBUG: Days difference (SQL DATEDIFF): {$daysDiff}");
+                \Log::info("DEBUG: Calculated overdue days code: {$overdueDaysCode}");
+
+                return (string)$overdueDaysCode;
+
+            } catch (\Exception $e) {
+                \Log::error("DEBUG: Exception in overdue days calculation for account {$loanAcc}: " . $e->getMessage());
+                return '0';
+            }
+        }
+
+        // For status 0, 8, 9, or any other status, return 0
+        \Log::info("DEBUG: Status '{$status}' is not 1, returning '0' (auto display 0 for status 0, 8, 9, or others)");
+        return '0';
     }
 
 
