@@ -9,36 +9,13 @@
 		<div class="alert alert-success">{{ session('success') }}</div>
 	@endif
 
-	<div class="card mb-4">
-		<div class="card-header">Add Branch</div>
-		<div class="card-body">
-			<form method="POST" action="{{ route('branches.store') }}">
-				@csrf
-				<div class="row g-3">
-					<div class="col-md-4">
-						<label class="form-label">Branch Code</label>
-						<input type="text" name="branch_code" class="form-control @error('branch_code') is-invalid @enderror" value="{{ old('branch_code') }}" required>
-						@error('branch_code')
-							<div class="invalid-feedback">{{ $message }}</div>
-						@enderror
-					</div>
-					<div class="col-md-6">
-						<label class="form-label">Branch Name</label>
-						<input type="text" name="branch_name" class="form-control @error('branch_name') is-invalid @enderror" value="{{ old('branch_name') }}" required>
-						@error('branch_name')
-							<div class="invalid-feedback">{{ $message }}</div>
-						@enderror
-					</div>
-					<div class="col-md-2 d-flex align-items-end">
-						<button type="submit" class="btn btn-primary">Add</button>
-					</div>
-				</div>
-			</form>
-		</div>
-	</div>
-
 	<div class="card">
-		<div class="card-header">Branches</div>
+		<div class="card-header d-flex justify-content-between align-items-center">
+			<span>Branches</span>
+			<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBranchModal">
+				<i class="fas fa-plus"></i> Add Branch
+			</button>
+		</div>
 		<div class="card-body">
 			<form method="GET" action="{{ route('branches.index') }}" class="row g-2 mb-3">
 				<div class="col-md-4">
@@ -119,6 +96,41 @@
 				{{ $branches->links() }}
 			</div>
 		</div>
+	</div>
+</div>
+
+<!-- Add Branch Modal -->
+<div class="modal fade" id="addBranchModal" tabindex="-1" aria-hidden="true">
+	<div class="modal-dialog">
+		<form method="POST" action="{{ route('branches.store') }}">
+			@csrf
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Add Branch</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<div class="mb-3">
+						<label class="form-label">Branch Code</label>
+						<input type="text" name="branch_code" class="form-control @error('branch_code') is-invalid @enderror" value="{{ old('branch_code') }}" required>
+						@error('branch_code')
+							<div class="invalid-feedback">{{ $message }}</div>
+						@enderror
+					</div>
+					<div class="mb-2">
+						<label class="form-label">Branch Name</label>
+						<input type="text" name="branch_name" class="form-control @error('branch_name') is-invalid @enderror" value="{{ old('branch_name') }}" required>
+						@error('branch_name')
+							<div class="invalid-feedback">{{ $message }}</div>
+						@enderror
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+					<button type="submit" class="btn btn-primary">Add Branch</button>
+				</div>
+			</div>
+		</form>
 	</div>
 </div>
 
